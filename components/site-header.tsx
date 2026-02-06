@@ -34,17 +34,19 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
+      <div className="mx-auto relative flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
         {/* Logo + Brand */}
         <Link href="/" className="flex items-center gap-3">
           {settings.logoUrl ? (
-            <img
-              src={settings.logoUrl || "/placeholder.svg"}
-              alt="Litoral Fishing"
-              className="h-10 w-auto object-contain"
-              loading="eager"
-              decoding="async"
-            />
+            <div className="flex items-center justify-center">
+              <img
+                src={settings.logoUrl || "/placeholder.svg"}
+                alt="Litoral Fishing"
+                className="h-28 w-28 object-contain"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
@@ -63,6 +65,13 @@ export function SiteHeader() {
             </div>
           )}
         </Link>
+
+        {/* Centered title */}
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary text-center">
+            Showroom Mayorista
+          </p>
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 md:flex" aria-label="Navegacion principal">

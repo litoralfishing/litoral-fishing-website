@@ -38,7 +38,7 @@ export function SiteFooter() {
           Caza, Pesca, Camping y Outdoor &middot; Showroom Mayorista &middot; Santa Fe Capital, Argentina
         </p>
         <p className="text-xs text-muted-foreground">
-          {"Todos los derechos reservados"}
+          {"Todos los derechos reservados - Desarrollado por Emanuel Gigena"}
         </p>
       </div>
     </footer>

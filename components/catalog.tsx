@@ -98,26 +98,20 @@ export function Catalog() {
   return (
     <div className="flex flex-col gap-6">
       {/* Hero section */}
-      <section className="relative overflow-hidden rounded-xl bg-secondary px-6 py-10 text-center lg:py-14">
-        <div className="relative z-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Showroom Mayorista
-          </p>
-          <h2 className="mt-2 font-heading text-3xl font-bold text-secondary-foreground lg:text-5xl text-balance">
-            Caza &middot; Pesca &middot; Camping &middot; Outdoor
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-secondary-foreground/70 lg:text-base">
-            Productos de las mejores marcas al por mayor. Santa Fe Capital, Argentina.
-          </p>
-        </div>
+        <section className="relative overflow-hidden rounded-xl bg-secondary px-6 pt-4 pb-20 text-center lg:pt-6 lg:pb-32 flex items-center justify-center min-h-[220px] lg:min-h-[320px]">
+        {/* Background image - place your image in public/ folder and update the src path */}
+        
         <div
-          className="absolute inset-0 opacity-[0.06]"
-          aria-hidden="true"
+          className="absolute inset-0 rounded-xl z-0"
           style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+            backgroundImage: "url('/PORTADA FACEBOOK.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 1,
           }}
+          aria-hidden="true"
         />
+        
       </section>
 
       {/* Category filter chips */}
