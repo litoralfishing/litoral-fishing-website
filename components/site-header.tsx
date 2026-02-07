@@ -42,7 +42,7 @@ export function SiteHeader() {
               <img
                 src={settings.logoUrl || "/placeholder.svg"}
                 alt="Litoral Fishing"
-                className="h-28 w-28 object-contain"
+                className="h-20 w-20 object-contain"
                 loading="eager"
                 decoding="async"
               />
