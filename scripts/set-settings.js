@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-require('dotenv').config({ path: '.env.local' })
 const { MongoClient } = require('mongodb')
 
 const uri = process.env.MONGODB_URI
