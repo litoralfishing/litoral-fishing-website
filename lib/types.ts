@@ -24,4 +24,10 @@ export interface SiteSettings {
   _id?: string
   logoUrl?: string
   whatsappNumber?: string
+  instagramUrl?: string
+  facebookUrl?: string
+  whatsappUrl?: string
+  address?: string
+  location?: string
+  phone?: string
 }

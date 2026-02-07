@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Inter, Inter_Tight } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
+import { FloatingWhatsAppButton } from '@/components/floating-whatsapp-button'
 import { Toaster } from 'sonner'
 
 import './globals.css'
@@ -31,6 +32,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster />
+          <FloatingWhatsAppButton />
         </ThemeProvider>
       </body>
     </html>
