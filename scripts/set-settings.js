@@ -22,7 +22,7 @@ if (input) {
     facebookUrl: 'https://www.facebook.com/profile.php?id=61587423848412',
     whatsappUrl: 'https://wa.link/k8qnyc',
     whatsappNumber: '3404519318',
-    address: 'Av Gorriti 4652, Santa Fe, Santa Fe 3000',
+    address: 'Av Gorriti 4610, Santa Fe, Santa Fe 3000',
     location: '',
     phone: ''
   }
