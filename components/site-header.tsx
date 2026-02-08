@@ -69,7 +69,7 @@ export function SiteHeader() {
         {/* Centered title */}
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary text-center">
-            Showroom Mayorista
+            Distribuidora Mayorista
           </p>
         </div>
 

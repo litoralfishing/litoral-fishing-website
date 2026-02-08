@@ -20,7 +20,7 @@ import {
   Check,
   BarChart3,
   ChevronDown,
-  ImagePlus,
+  ImagePlus
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -78,6 +78,8 @@ import { Switch } from "@/components/ui/switch"
 import type { Product, SiteSettings, Category } from "@/lib/types"
 import { CATEGORIES } from "@/lib/types"
 import { toast } from "sonner"
+import Link from "next/link"
+
 
 interface AdminDashboardProps {
   onLogout: () => void
@@ -423,22 +425,24 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* Admin header */}
         <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
           <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 lg:px-8">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-                <span className="font-heading text-sm font-bold text-primary-foreground">
-                  LF
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
+                  <span className="font-heading text-sm font-bold text-primary-foreground">
+                    LF
+                  </span>
+                </div>
+                <div className="hidden sm:block">
+                  <span className="font-heading text-base font-bold uppercase tracking-tight text-foreground">
+                    Litoral Fishing
+                  </span>
+                  <span className="ml-1.5 text-xs text-muted-foreground">Admin</span>
+                </div>
+                <span className="font-heading text-base font-bold uppercase tracking-tight text-foreground sm:hidden">
+                  LF Admin
                 </span>
               </div>
-              <div className="hidden sm:block">
-                <span className="font-heading text-base font-bold uppercase tracking-tight text-foreground">
-                  Litoral Fishing
-                </span>
-                <span className="ml-1.5 text-xs text-muted-foreground">Admin</span>
-              </div>
-              <span className="font-heading text-base font-bold uppercase tracking-tight text-foreground sm:hidden">
-                LF Admin
-              </span>
-            </div>
+            </Link>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Salir
@@ -449,14 +453,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         <main className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
           <Tabs defaultValue="products">
             <TabsList className="mb-6">
-              <TabsTrigger value="products" className="gap-2">
-                <Package className="h-4 w-4" />
-                Productos
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="gap-2">
-                <Settings className="h-4 w-4" />
-                Configuracion
-              </TabsTrigger>
+                <Link href="/" className="flex items-center gap-3">
+                  <Button variant="ghost" size="sm">
+                    Volver
+                  </Button>
+                </Link>
+                <TabsTrigger value="products" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  Productos
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Configuracion
+                </TabsTrigger>
             </TabsList>
 
             {/* ============================== */}
