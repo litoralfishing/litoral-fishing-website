@@ -25,7 +25,7 @@ const CATEGORY_ICONS: Record<Category, React.ReactNode> = {
   Pesca: <Fish className="h-3.5 w-3.5" />,
   Caza: <Crosshair className="h-3.5 w-3.5" />,
   Camping: <Tent className="h-3.5 w-3.5" />,
-  Outdoor: <Mountain className="h-3.5 w-3.5" />,
+  Indumentaria: <Mountain className="h-3.5 w-3.5" />,
 }
 
 const ITEMS_PER_PAGE = 12

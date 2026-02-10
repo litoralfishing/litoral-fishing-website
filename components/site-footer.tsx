@@ -37,7 +37,7 @@ export function SiteFooter() {
               <span className="font-heading text-sm font-bold uppercase tracking-tight text-foreground">
                 Litoral Fishing
               </span>
-              <div className="text-xs text-muted-foreground">Caza • Pesca • Camping • Outdoor</div>
+              <div className="text-xs text-muted-foreground">Caza • Pesca • Camping • Indumentaria</div>
             </div>
           </div>
 
@@ -72,7 +72,7 @@ export function SiteFooter() {
             </div>
 
             <div className="text-xs text-muted-foreground text-center lg:text-right">
-              Caza, Pesca, Camping y Outdoor · Showroom Mayorista
+              Caza, Pesca, Camping e Indumentaria · Showroom Mayorista
               <br />
               {"Todos los derechos reservados - Desarrollado por Emanuel Gigena"}
             </div>

@@ -100,7 +100,7 @@ interface ProductForm {
 const emptyForm: ProductForm = {
   name: "",
   code: "",
-  category: "Outdoor",
+  category: "Indumentaria",
   description: "",
   price: "",
   hidden: false,
@@ -145,7 +145,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Bulk category update
   const [bulkCategoryDialogOpen, setBulkCategoryDialogOpen] = useState(false)
-  const [bulkCategory, setBulkCategory] = useState<Category>("Outdoor")
+  const [bulkCategory, setBulkCategory] = useState<Category>("Indumentaria")
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -417,7 +417,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setForm({
       name: product.name,
       code: product.code,
-      category: product.category || "Outdoor",
+      category: product.category || "Indumentaria",
       description: product.description || "",
       price: product.price?.toString() || "",
       hidden: product.hidden,

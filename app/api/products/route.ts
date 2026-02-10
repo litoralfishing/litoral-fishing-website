@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     const product = {
       name: body.name.trim(),
       code: body.code.trim(),
-      category: body.category || "Outdoor",
+      category: body.category || "Indumentaria",
       description: body.description?.trim() || "",
       price: body.price ? Number(body.price) : undefined,
       image: body.image || undefined,

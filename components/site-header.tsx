@@ -59,7 +59,7 @@ export function SiteHeader() {
                   Litoral Fishing
                 </h1>
                 <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Caza &middot; Pesca &middot; Camping &middot; Outdoor
+                  Caza &middot; Pesca &middot; Camping &middot; Indumentaria
                 </p>
               </div>
             </div>

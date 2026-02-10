@@ -11,9 +11,9 @@ const _inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const _interTight = Inter_Tight({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'], variable: '--font-inter-tight' })
 
 export const metadata: Metadata = {
-  title: 'Litoral Fishing - Caza, Pesca, Camping y Outdoor Mayorista',
+  title: 'Litoral Fishing - Caza, Pesca, Camping e Indumentaria Mayorista',
   description:
-    'Showroom mayorista de productos de caza, pesca, camping y outdoor en Santa Fe Capital, Argentina. Canas, reels, carpas, cuchillos, optica y mas.',
+    'Showroom mayorista de productos de caza, pesca, camping e indumentaria en Santa Fe Capital, Argentina. Canas, reels, carpas, cuchillos, optica y mas.',
 }
 
 export default function RootLayout({

@@ -2,7 +2,7 @@ export const CATEGORIES = [
   "Pesca",
   "Caza",
   "Camping",
-  "Outdoor",
+  "Indumentaria",
 ] as const
 
 export type Category = (typeof CATEGORIES)[number]
