@@ -28,6 +28,8 @@ const CATEGORY_ICONS: Record<Category, React.ReactNode> = {
   Outdoor: <Mountain className="h-3.5 w-3.5" />,
 }
 
+const ITEMS_PER_PAGE = 12
+
 export function Catalog() {
   const { products, isLoading, isError, mutate } = useProducts()
   const [search, setSearch] = useState("")
@@ -37,6 +39,7 @@ export function Catalog() {
   const [activeCategory, setActiveCategory] = useState<Category | "all">("all")
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null)
   const [seeded, setSeeded] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
 
   // Auto-seed on first load if no products
   useEffect(() => {
@@ -50,6 +53,11 @@ export function Catalog() {
         .catch(() => {})
     }
   }, [isLoading, products.length, seeded, mutate])
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE)
+  }, [debouncedSearch, showPriceOnly, activeCategory])
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -76,6 +84,11 @@ export function Catalog() {
       return matchesSearch && matchesPrice && matchesCategory
     })
   }, [products, debouncedSearch, showPriceOnly, activeCategory])
+
+  // Apply pagination to filtered results
+  const visibleProducts = useMemo(() => {
+    return filtered.slice(0, visibleCount)
+  }, [filtered, visibleCount])
 
   // Count per category for badges
   const categoryCounts = useMemo(() => {
@@ -205,7 +218,7 @@ export function Catalog() {
       {!isLoading && !isError && (
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span>
-            {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
+            Mostrando {visibleProducts.length} de {filtered.length} producto{filtered.length !== 1 ? "s" : ""}
           </span>
           {activeCategory !== "all" && (
             <Badge variant="outline" className="gap-1">
@@ -261,15 +274,31 @@ export function Catalog() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              onViewDetail={setSelectedProduct}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {visibleProducts.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onViewDetail={setSelectedProduct}
+              />
+            ))}
+          </div>
+
+          {/* Load more button */}
+          {visibleCount < filtered.length && (
+            <div className="flex justify-center pt-8">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setVisibleCount((prev) => prev + ITEMS_PER_PAGE)}
+                className="min-w-[200px]"
+              >
+                Cargar más productos
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Product detail dialog */}

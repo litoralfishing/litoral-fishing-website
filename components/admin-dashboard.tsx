@@ -20,7 +20,10 @@ import {
   Check,
   BarChart3,
   ChevronDown,
-  ImagePlus
+  ImagePlus,
+  DollarSign,
+  Tag,
+  Percent
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -123,6 +126,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Search, filter, selection
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [visibilityFilter, setVisibilityFilter] =
     useState<VisibilityFilter>("all")
   const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all")
@@ -134,6 +138,14 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [savingSettings, setSavingSettings] = useState(false)
+
+  // Bulk price update
+  const [bulkPriceDialogOpen, setBulkPriceDialogOpen] = useState(false)
+  const [pricePercentage, setPricePercentage] = useState("")
+
+  // Bulk category update
+  const [bulkCategoryDialogOpen, setBulkCategoryDialogOpen] = useState(false)
+  const [bulkCategory, setBulkCategory] = useState<Category>("Outdoor")
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -163,6 +175,15 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     fetchSettings()
   }, [fetchProducts, fetchSettings])
 
+  // Debounce search query for better performance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 300) // Wait 300ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
   // Filter + search
   const filteredProducts = useMemo(() => {
     let result = products
@@ -177,8 +198,8 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       result = result.filter((p) => p.category === categoryFilter)
     }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim()
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase().trim()
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -188,22 +209,30 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
 
     return result
-  }, [products, visibilityFilter, categoryFilter, searchQuery])
+  }, [products, visibilityFilter, categoryFilter, debouncedSearchQuery])
 
   // Statistics
   const stats = useMemo(
-    () => ({
-      total: products.length,
-      visible: products.filter((p) => !p.hidden).length,
-      hidden: products.filter((p) => p.hidden).length,
-      withPrice: products.filter((p) => p.price && p.price > 0).length,
-      withImage: products.filter((p) => !!p.image).length,
-    }),
+    () => {
+      const withPrice = products.filter((p) => p.price && p.price > 0)
+      const totalPrice = withPrice.reduce((sum, p) => sum + (p.price || 0), 0)
+      const avgPrice = withPrice.length > 0 ? totalPrice / withPrice.length : 0
+      return {
+        total: products.length,
+        visible: products.filter((p) => !p.hidden).length,
+        hidden: products.filter((p) => p.hidden).length,
+        withPrice: withPrice.length,
+        withoutPrice: products.filter((p) => !p.price || p.price <= 0).length,
+        withImage: products.filter((p) => !!p.image).length,
+        totalPrice,
+        avgPrice,
+      }
+    },
     [products]
   )
 
   // Image preview helper
-  const handleImageFileChange = (file: File | null) => {
+  const handleImageFileChange = useCallback((file: File | null) => {
     setImageFile(file)
     if (file) {
       const reader = new FileReader()
@@ -212,9 +241,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } else {
       setImagePreview(null)
     }
-  }
+  }, [])
 
-  const handleLogoFileChange = (file: File | null) => {
+  const handleLogoFileChange = useCallback((file: File | null) => {
     setLogoFile(file)
     if (file) {
       const reader = new FileReader()
@@ -223,7 +252,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } else {
       setLogoPreview(null)
     }
-  }
+  }, [])
 
   // Upload helper
   const uploadFile = async (file: File): Promise<string | null> => {
@@ -235,35 +264,59 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     return data.url
   }
 
-  // Selection helpers
-  const allFilteredSelected =
-    filteredProducts.length > 0 &&
-    filteredProducts.every((p) => selectedIds.has(p._id))
+  // Search handler with memoization
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value)
+  }, [])
 
-  const someFilteredSelected =
-    filteredProducts.some((p) => selectedIds.has(p._id)) &&
-    !allFilteredSelected
+  // Filter handlers with memoization
+  const handleCategoryFilterChange = useCallback((value: string) => {
+    setCategoryFilter(value as Category | "all")
+  }, [])
 
-  const toggleSelectAll = () => {
+  const handleVisibilityFilterChange = useCallback((value: string) => {
+    setVisibilityFilter(value as VisibilityFilter)
+  }, [])
+
+  // Selection helpers - memoized for performance
+  const allFilteredSelected = useMemo(
+    () =>
+      filteredProducts.length > 0 &&
+      filteredProducts.every((p) => selectedIds.has(p._id)),
+    [filteredProducts, selectedIds]
+  )
+
+  const someFilteredSelected = useMemo(
+    () =>
+      filteredProducts.some((p) => selectedIds.has(p._id)) &&
+      !allFilteredSelected,
+    [filteredProducts, selectedIds, allFilteredSelected]
+  )
+
+  const toggleSelectAll = useCallback(() => {
     if (allFilteredSelected) {
       setSelectedIds(new Set())
     } else {
-      setSelectedIds(new Set(filteredProducts.map((p) => p._id)))
+      // More efficient: use array and create Set once
+      const ids = filteredProducts.map((p) => p._id)
+      setSelectedIds(new Set(ids))
     }
-  }
+  }, [allFilteredSelected, filteredProducts])
 
-  const toggleSelect = (id: string) => {
-    const next = new Set(selectedIds)
-    if (next.has(id)) {
-      next.delete(id)
-    } else {
-      next.add(id)
-    }
-    setSelectedIds(next)
-  }
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
 
   // Bulk visibility
-  const handleBulkVisibility = async (hidden: boolean) => {
+  const handleBulkVisibility = useCallback(async (hidden: boolean) => {
     if (selectedIds.size === 0) return
     setBulkLoading(true)
     try {
@@ -283,18 +336,83 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } finally {
       setBulkLoading(false)
     }
-  }
+  }, [selectedIds, fetchProducts])
+
+  // Bulk price update
+  const handleBulkPriceUpdate = useCallback(async () => {
+    if (selectedIds.size === 0 || !pricePercentage) return
+    const percentage = Number(pricePercentage)
+    if (isNaN(percentage)) {
+      toast.error("Ingresa un porcentaje válido")
+      return
+    }
+    setBulkLoading(true)
+    try {
+      const selectedProducts = products.filter((p) => selectedIds.has(p._id))
+      const updates = selectedProducts.map((p) => ({
+        _id: p._id,
+        price: p.price ? p.price * (1 + percentage / 100) : undefined,
+      }))
+
+      for (const update of updates) {
+        await fetch("/api/products", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(update),
+        })
+      }
+
+      const sign = percentage > 0 ? "+" : ""
+      toast.success(
+        `Precios actualizados: ${sign}${percentage}% en ${selectedIds.size} producto${selectedIds.size > 1 ? "s" : ""}`
+      )
+      setSelectedIds(new Set())
+      setPricePercentage("")
+      setBulkPriceDialogOpen(false)
+      fetchProducts()
+    } catch {
+      toast.error("Error al actualizar precios")
+    } finally {
+      setBulkLoading(false)
+    }
+  }, [selectedIds, pricePercentage, products, fetchProducts])
+
+  // Bulk category update
+  const handleBulkCategoryUpdate = useCallback(async () => {
+    if (selectedIds.size === 0) return
+    setBulkLoading(true)
+    try {
+      for (const id of selectedIds) {
+        await fetch("/api/products", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ _id: id, category: bulkCategory }),
+        })
+      }
+
+      toast.success(
+        `${selectedIds.size} producto${selectedIds.size > 1 ? "s" : ""} movido${selectedIds.size > 1 ? "s" : ""} a ${bulkCategory}`
+      )
+      setSelectedIds(new Set())
+      setBulkCategoryDialogOpen(false)
+      fetchProducts()
+    } catch {
+      toast.error("Error al actualizar categorías")
+    } finally {
+      setBulkLoading(false)
+    }
+  }, [selectedIds, bulkCategory, fetchProducts])
 
   // Product CRUD
-  const handleOpenNew = () => {
+  const handleOpenNew = useCallback(() => {
     setEditingId(null)
     setForm(emptyForm)
     setImageFile(null)
     setImagePreview(null)
     setFormOpen(true)
-  }
+  }, [])
 
-  const handleOpenEdit = (product: Product) => {
+  const handleOpenEdit = useCallback((product: Product) => {
     setEditingId(product._id)
     setForm({
       name: product.name,
@@ -307,9 +425,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setImageFile(null)
     setImagePreview(product.image || null)
     setFormOpen(true)
-  }
+  }, [])
 
-  const handleSaveProduct = async () => {
+  const handleSaveProduct = useCallback(async () => {
     if (!form.name || !form.code) {
       toast.error("Nombre y codigo son obligatorios")
       return
@@ -356,9 +474,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } finally {
       setSaving(false)
     }
-  }
+  }, [form, imageFile, editingId, fetchProducts, uploadFile])
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!deleteId) return
     try {
       await fetch(`/api/products?id=${deleteId}`, { method: "DELETE" })
@@ -373,9 +491,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } catch {
       toast.error("Error al eliminar producto")
     }
-  }
+  }, [deleteId, fetchProducts])
 
-  const handleToggleVisibility = async (product: Product) => {
+  const handleToggleVisibility = useCallback(async (product: Product) => {
     try {
       await fetch("/api/products", {
         method: "PUT",
@@ -387,10 +505,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } catch {
       toast.error("Error al cambiar visibilidad")
     }
-  }
+  }, [fetchProducts])
 
   // Settings
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = useCallback(async () => {
     setSavingSettings(true)
     try {
       let logoUrl = settings.logoUrl
@@ -412,12 +530,12 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } finally {
       setSavingSettings(false)
     }
-  }
+  }, [whatsapp, settings.logoUrl, logoFile, fetchSettings, uploadFile])
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" })
     onLogout()
-  }
+  }, [onLogout])
 
   return (
     <TooltipProvider>
@@ -486,14 +604,20 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   accent
                 />
                 <StatCard
-                  icon={<EyeOff className="h-4 w-4" />}
-                  label="Ocultos"
-                  value={stats.hidden}
+                  icon={<DollarSign className="h-4 w-4" />}
+                  label="Sin precio"
+                  value={stats.withoutPrice}
+                  warning={stats.withoutPrice > 0}
                 />
                 <StatCard
                   icon={<BarChart3 className="h-4 w-4" />}
                   label="Con precio"
                   value={stats.withPrice}
+                  subtext={
+                    stats.avgPrice > 0
+                      ? `Promedio: $${stats.avgPrice.toLocaleString("es-AR", { maximumFractionDigits: 2 })}`
+                      : undefined
+                  }
                 />
               </div>
 
@@ -505,14 +629,14 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       placeholder="Buscar por nombre o codigo..."
                       className="pl-9 pr-8"
                     />
                     {searchQuery && (
                       <button
                         type="button"
-                        onClick={() => setSearchQuery("")}
+                        onClick={() => handleSearchChange("")}
                         className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -524,7 +648,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   {/* Category filter */}
                   <Select
                     value={categoryFilter}
-                    onValueChange={(v) => setCategoryFilter(v as Category | "all")}
+                    onValueChange={handleCategoryFilterChange}
                   >
                     <SelectTrigger className="w-full sm:w-[150px]">
                       <SelectValue placeholder="Categoria" />
@@ -540,9 +664,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   {/* Visibility filter */}
                   <Select
                     value={visibilityFilter}
-                    onValueChange={(v) =>
-                      setVisibilityFilter(v as VisibilityFilter)
-                    }
+                    onValueChange={handleVisibilityFilterChange}
                   >
                     <SelectTrigger className="w-full sm:w-[150px]">
                       <SelectValue placeholder="Todos" />
@@ -589,6 +711,20 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           <EyeOff className="mr-2 h-4 w-4" />
                           Ocultar seleccionados
                         </DropdownMenuItem>
+                        <Separator className="my-1" />
+                        <DropdownMenuItem
+                          onClick={() => setBulkCategoryDialogOpen(true)}
+                        >
+                          <Tag className="mr-2 h-4 w-4" />
+                          Cambiar categoria
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setBulkPriceDialogOpen(true)}
+                        >
+                          <Percent className="mr-2 h-4 w-4" />
+                          Ajustar precios
+                        </DropdownMenuItem>
+                        <Separator className="my-1" />
                         <DropdownMenuItem
                           onClick={() => setSelectedIds(new Set())}
                         >
@@ -1093,6 +1229,134 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </DialogContent>
         </Dialog>
 
+        {/* Bulk Price Update Dialog */}
+        <Dialog open={bulkPriceDialogOpen} onOpenChange={setBulkPriceDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading">Ajustar precios</DialogTitle>
+              <DialogDescription>
+                Aplicar un aumento o descuento porcentual a los {selectedIds.size} producto{selectedIds.size > 1 ? "s" : ""} seleccionado{selectedIds.size > 1 ? "s" : ""}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="price-percent">Porcentaje</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="price-percent"
+                    type="number"
+                    step="0.1"
+                    value={pricePercentage}
+                    onChange={(e) => setPricePercentage(e.target.value)}
+                    placeholder="10.5"
+                    className="flex-1"
+                  />
+                  <span className="text-lg font-semibold text-muted-foreground">%</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Usa números positivos para aumentar o negativos para descontar
+                </p>
+              </div>
+
+              {/* Preview */}
+              {pricePercentage && !isNaN(Number(pricePercentage)) && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Vista previa (primeros 3 productos):</p>
+                  <div className="space-y-1.5 text-xs">
+                    {products
+                      .filter((p) => selectedIds.has(p._id) && p.price)
+                      .slice(0, 3)
+                      .map((p) => {
+                        const newPrice = p.price! * (1 + Number(pricePercentage) / 100)
+                        return (
+                          <div key={p._id} className="flex justify-between">
+                            <span className="text-muted-foreground truncate flex-1">{p.name}</span>
+                            <span className="flex gap-2 ml-2">
+                              <span className="line-through text-muted-foreground">${p.price?.toFixed(2)}</span>
+                              <span className="font-semibold text-foreground">${newPrice.toFixed(2)}</span>
+                            </span>
+                          </div>
+                        )
+                      })}
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBulkPriceDialogOpen(false)
+                  setPricePercentage("")
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleBulkPriceUpdate}
+                disabled={bulkLoading || !pricePercentage}
+              >
+                {bulkLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Aplicar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bulk Category Update Dialog */}
+        <Dialog open={bulkCategoryDialogOpen} onOpenChange={setBulkCategoryDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading">Cambiar categoría</DialogTitle>
+              <DialogDescription>
+                Mover los {selectedIds.size} producto{selectedIds.size > 1 ? "s" : ""} seleccionado{selectedIds.size > 1 ? "s" : ""} a una nueva categoría
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="bulk-category">Nueva categoría</Label>
+                <Select
+                  value={bulkCategory}
+                  onValueChange={(v) => setBulkCategory(v as Category)}
+                >
+                  <SelectTrigger id="bulk-category">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Summary */}
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Resumen:</p>
+                <div className="space-y-1 text-xs text-foreground">
+                  <p>Productos a mover: <span className="font-semibold">{selectedIds.size}</span></p>
+                  <p>Nueva categoría: <span className="font-semibold">{bulkCategory}</span></p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setBulkCategoryDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleBulkCategoryUpdate}
+                disabled={bulkLoading}
+              >
+                {bulkLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Mover productos
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Delete Confirmation */}
         <AlertDialog
           open={!!deleteId}
@@ -1130,25 +1394,38 @@ function StatCard({
   label,
   value,
   accent,
+  warning,
+  subtext,
 }: {
   icon: React.ReactNode
   label: string
   value: number
   accent?: boolean
+  warning?: boolean
+  subtext?: string
 }) {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 px-4 py-3">
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${accent ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+            warning
+              ? "bg-destructive/15 text-destructive"
+              : accent
+                ? "bg-primary/15 text-primary"
+                : "bg-muted text-muted-foreground"
+          }`}
         >
           {icon}
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-2xl font-bold leading-none text-foreground">
             {value}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+          {subtext && (
+            <p className="mt-1 text-xs text-muted-foreground font-medium">{subtext}</p>
+          )}
         </div>
       </CardContent>
     </Card>
