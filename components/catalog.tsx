@@ -42,17 +42,17 @@ export function Catalog() {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
 
   // Auto-seed on first load if no products
-  useEffect(() => {
-    if (!isLoading && products.length === 0 && !seeded) {
-      setSeeded(true)
-      fetch("/api/seed", { method: "POST" })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.seeded) mutate()
-        })
-        .catch(() => {})
-    }
-  }, [isLoading, products.length, seeded, mutate])
+  // useEffect(() => {
+  //   if (!isLoading && products.length === 0 && !seeded) {
+  //     setSeeded(true)
+  //     fetch("/api/seed", { method: "POST" })
+  //       .then((r) => r.json())
+  //       .then((data) => {
+  //         if (data.seeded) mutate()
+  //       })
+  //       .catch(() => {})
+  //   }
+  // }, [isLoading, products.length, seeded, mutate])
 
   // Reset pagination when filters change
   useEffect(() => {

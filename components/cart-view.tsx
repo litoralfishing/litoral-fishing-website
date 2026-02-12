@@ -364,7 +364,7 @@ export function CartView() {
     const message = generateWhatsAppMessage(items, customer)
     const phone = settings.whatsappNumber || ""
     const encoded = encodeURIComponent(message)
-    window.open(`whatsappUrl`, "_blank")
+    window.open(`https://wa.link/k8qnyc`, "_blank")
     setTimeout(() => setIsSending(false), 2000)
   }
 
